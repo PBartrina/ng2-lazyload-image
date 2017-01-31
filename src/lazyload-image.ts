@@ -5,26 +5,35 @@ import 'rxjs/add/operator/mergeMap';
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/observable/of';
 import { Observable } from 'rxjs/Observable';
+import { isBrowser } from 'angular2-universal';
 import { getScrollListener } from './scroll-listener';
 
-function isVisible(element: HTMLElement, threshold = 0, _window = window) {
-    const rect = element.getBoundingClientRect();
-    // Is the element in viewport but larger then viewport itself
-    const elementLargerThenViewport = rect.top <= threshold && rect.bottom >= -threshold;
-    // Is the top of the element in the viewport
-    const topInsideViewport = rect.top >= 0 && rect.top <= _window.innerHeight;
-    // Is the bottom of the element in the viewport
-    const belowInsideViewport = rect.bottom >= 0 && rect.bottom <= _window.innerHeight;
-    // Is the right side of the element in the viewport
-    const rightsideInViewport = rect.right >= -threshold && (rect.right - threshold) <= _window.innerWidth;
-    // Is the left side of the element is the viewport
-    const leftsideInViewport = rect.left >= -threshold && (rect.left - threshold) <= _window.innerWidth;
+function isVisible( element: HTMLElement,
+                    threshold = 0,
+                    _window = (isBrowser) ? window : null ) {
 
-    return (
-        elementLargerThenViewport ||
-        ((topInsideViewport || belowInsideViewport) &&
-        (rightsideInViewport || leftsideInViewport))
-    );
+    // Assuming the element is visible when doing a Server Side Render
+    if ( !isBrowser ) {
+        return true;
+    } else {
+        const rect = element.getBoundingClientRect();
+        // Is the element in viewport but larger then viewport itself
+        const elementLargerThenViewport = rect.top <= threshold && rect.bottom >= -threshold;
+        // Is the top of the element in the viewport
+        const topInsideViewport = rect.top >= 0 && rect.top <= _window.innerHeight;
+        // Is the bottom of the element in the viewport
+        const belowInsideViewport = rect.bottom >= 0 && rect.bottom <= _window.innerHeight;
+        // Is the right side of the element in the viewport
+        const rightsideInViewport = rect.right >= -threshold && (rect.right - threshold) <= _window.innerWidth;
+        // Is the left side of the element is the viewport
+        const leftsideInViewport = rect.left >= -threshold && (rect.left - threshold) <= _window.innerWidth;
+
+        return (
+            elementLargerThenViewport ||
+            ((topInsideViewport || belowInsideViewport) &&
+            (rightsideInViewport || leftsideInViewport))
+        );
+    }
 }
 
 function loadImage(imagePath: string): Observable<HTMLImageElement> {
